@@ -1,0 +1,10 @@
+rootProject.name = 'track-me-platform'
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+    }
+}
+
+include 'platform'
+include 'commons'
