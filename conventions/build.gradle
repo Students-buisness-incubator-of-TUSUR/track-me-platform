@@ -1,0 +1,26 @@
+plugins {
+    id 'groovy-gradle-plugin'
+    id 'maven-publish'
+}
+
+group = 'net.trackme.conventions'
+
+// Included build не наследует gradle.properties корневой сборки,
+// поэтому версия по умолчанию читается оттуда вручную.
+// -Pversion из командной строки имеет приоритет (CI задаёт её при релизе).
+def rootProps = new Properties()
+new File(rootDir.parentFile, 'gradle.properties').withInputStream { rootProps.load(it) }
+version = providers.gradleProperty('version').getOrElse(rootProps.getProperty('version'))
+
+publishing {
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+            url = uri('https://maven.pkg.github.com/Students-buisness-incubator-of-TUSUR/track-me-platform')
+            credentials {
+                username = project.findProperty('gpr.user') ?: System.getenv('GITHUB_ACTOR')
+                password = project.findProperty('gpr.key') ?: System.getenv('GITHUB_TOKEN')
+            }
+        }
+    }
+}

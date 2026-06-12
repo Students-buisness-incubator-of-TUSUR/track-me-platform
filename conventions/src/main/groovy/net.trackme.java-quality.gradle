@@ -1,0 +1,81 @@
+// Convention-плагин качества кода Track Me: checkstyle + jacoco.
+// Подключается в сервисах как id 'net.trackme.java-quality'.
+
+plugins {
+    id 'java'
+    id 'checkstyle'
+    id 'jacoco'
+}
+
+// --- Checkstyle ---------------------------------------------------------
+
+// Конфиги упакованы в jar плагина, а Checkstyle принимает только файлы,
+// поэтому перед проверкой они распаковываются в build/checkstyle-config.
+def checkstyleConfigDir = layout.buildDirectory.dir('checkstyle-config')
+
+def checkstyleConfigs = ['checkstyle.xml', 'suppressions.xml'].collectEntries { name ->
+    [name, getClass().classLoader.getResource("net/trackme/checkstyle/${name}").text]
+}
+
+def extractCheckstyleConfig = tasks.register('extractCheckstyleConfig') {
+    def outputDir = checkstyleConfigDir
+    def configs = checkstyleConfigs
+    outputs.dir(outputDir)
+    doLast {
+        configs.each { name, text ->
+            new File(outputDir.get().asFile, name).text = text
+        }
+    }
+}
+
+checkstyle {
+    toolVersion = '10.12.5'
+    configDirectory = checkstyleConfigDir
+    ignoreFailures = true  // Set to false to fail build on violations
+    maxWarnings = Integer.MAX_VALUE  // Set to 0 to fail on any warnings
+}
+
+tasks.withType(Checkstyle).configureEach {
+    dependsOn extractCheckstyleConfig
+    configProperties['org.checkstyle.sun.suppressionfilter.config'] =
+            checkstyleConfigDir.get().file('suppressions.xml').asFile.path
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+// --- JaCoCo -------------------------------------------------------------
+
+// Минимальное покрытие строк; переопределяется в gradle.properties потребителя:
+// trackme.coverage.minimum=0.45
+def coverageMinimum = providers.gradleProperty('trackme.coverage.minimum')
+        .getOrElse('0.60') as BigDecimal
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn test
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = coverageMinimum
+            }
+        }
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
