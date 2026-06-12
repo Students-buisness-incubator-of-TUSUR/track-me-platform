@@ -23,16 +23,21 @@ def extractCheckstyleConfig = tasks.register('extractCheckstyleConfig') {
     outputs.dir(outputDir)
     doLast {
         configs.each { name, text ->
-            new File(outputDir.get().asFile, name).text = text
+            new File(outputDir.get().asFile as String, name as String).text = text
         }
     }
 }
 
 checkstyle {
-    toolVersion = '10.12.5'
+    toolVersion = '13.5.0'
     configDirectory = checkstyleConfigDir
     ignoreFailures = true  // Set to false to fail build on violations
     maxWarnings = Integer.MAX_VALUE  // Set to 0 to fail on any warnings
+    sourceSets = [project.sourceSets.main]
+}
+
+dependencies {
+    checkstyle "com.puppycrawl.tools:checkstyle:${checkstyle.toolVersion}"
 }
 
 tasks.withType(Checkstyle).configureEach {
