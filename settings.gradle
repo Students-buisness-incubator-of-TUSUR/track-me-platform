@@ -1,3 +1,7 @@
+pluginManagement {
+    includeBuild('conventions')
+}
+
 rootProject.name = 'track-me-platform'
 
 dependencyResolutionManagement {

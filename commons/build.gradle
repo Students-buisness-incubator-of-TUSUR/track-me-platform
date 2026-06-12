@@ -1,6 +1,5 @@
 plugins {
-    id 'java'
-    id 'jacoco'
+    id 'net.trackme.java-quality'
     id 'io.freefair.lombok'
 }
 
@@ -32,19 +31,6 @@ dependencies {
     testImplementation 'org.springframework:spring-test'
     testImplementation 'org.springframework.boot:spring-boot-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-}
-
-test {
-    useJUnitPlatform()
-    finalizedBy jacocoTestReport
-}
-
-jacocoTestReport {
-    dependsOn test
-    reports {
-        xml.required = true
-        html.required = true
-    }
 }
 
 publishing {
