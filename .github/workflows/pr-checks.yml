@@ -8,12 +8,19 @@ on:
       - master
       - develop
 
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Полная история нужна SonarCloud для анализа нового кода и blame
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -24,6 +31,17 @@ jobs:
 
       - name: Build and test
         run: ./gradlew build
+
+      # Пропускается для PR из форков — у них нет доступа к секретам
+      - name: SonarCloud analysis
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: >
+          ./gradlew sonar
+          -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }}
+          -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
 
   publish-snapshot:
     if: github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'publish-snapshot')
