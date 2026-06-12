@@ -20,21 +20,14 @@ subprojects {
         }
     }
 
-    plugins.withId('java') {
-        apply plugin: 'checkstyle'
+}
 
-        checkstyle {
-            toolVersion = '10.12.5'
-            configFile = rootProject.file('config/checkstyle/checkstyle.xml')
-            ignoreFailures = true  // Set to false to fail build on violations
-            maxWarnings = Integer.MAX_VALUE  // Set to 0 to fail on any warnings
-        }
+// Convention-плагин живёт в included build (conventions/) и не попадает
+// в ./gradlew publish — публикуется этими отдельными задачами.
+tasks.register('publishConventions') {
+    dependsOn gradle.includedBuild('conventions').task(':publish')
+}
 
-        tasks.withType(Checkstyle).configureEach {
-            reports {
-                xml.required = true
-                html.required = true
-            }
-        }
-    }
+tasks.register('publishConventionsToMavenLocal') {
+    dependsOn gradle.includedBuild('conventions').task(':publishToMavenLocal')
 }

@@ -10,6 +10,7 @@
 |---|---|---|
 | `platform` | `net.trackme.platform:platform` | Gradle BOM (`java-platform`): версии Spring Boot, Spring Cloud, security, lombok, mapstruct и т.д. |
 | `commons` | `net.trackme.commons:commons` | Общая библиотека: базовые JPA-сущности (`CoreEntity`, `BusinessEntity`, `VersionedBusinessEntity`), Spring Security ACL (`AclService`), абстракция фильтрации (`Filter`, `FilterRequest`) |
+| `conventions` | Gradle-плагин `net.trackme.java-quality` | Convention-плагин качества кода |
 
 ## Подключение
 
@@ -45,19 +46,55 @@ gpr.key=<personal-access-token>
 
 либо через переменные окружения `GITHUB_ACTOR` / `GITHUB_TOKEN`.
 
+## Плагин качества кода
+
+Плагин `net.trackme.java-quality`.
+В `settings.gradle` потребителя нужен репозиторий плагинов
+(тот же GitHub Packages):
+
+```gradle
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url = uri('https://maven.pkg.github.com/Students-buisness-incubator-of-TUSUR/track-me-platform')
+            credentials {
+                username = providers.gradleProperty('gpr.user').orNull ?: System.getenv('GITHUB_ACTOR')
+                password = providers.gradleProperty('gpr.key').orNull ?: System.getenv('GITHUB_TOKEN')
+            }
+        }
+    }
+}
+```
+
+В `build.gradle` потребителя:
+
+```gradle
+plugins {
+    id 'net.trackme.java-quality' version '1.0.0'
+}
+```
+
+Порог покрытия переопределяется в `gradle.properties` проекта:
+
+```properties
+trackme.coverage.minimum=0.45
+```
+
 ## Сборка
 
 ```bash
-./gradlew build                 # сборка + тесты
-./gradlew publishToMavenLocal   # локальная публикация в ~/.m2 (версия 1.0.0-SNAPSHOT)
+./gradlew build                              # сборка + тесты
+./gradlew publishToMavenLocal                # локальная публикация platform и commons в ~/.m2
+./gradlew publishConventionsToMavenLocal     # локальная публикация плагина net.trackme.java-quality
 ```
 
 Java 21 (toolchain), Gradle 8.8 (wrapper).
 
 ## Релиз
 
-Релиз делается git-тегом — workflow `publish.yml` публикует обе библиотеки
-в GitHub Packages с версией из тега:
+Релиз делается git-тегом — workflow `publish.yml` публикует platform, commons
+и плагин conventions в GitHub Packages с версией из тега:
 
 ```bash
 git tag v1.2.3
