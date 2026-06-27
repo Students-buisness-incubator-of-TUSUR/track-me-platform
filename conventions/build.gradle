@@ -5,12 +5,18 @@ plugins {
 
 group = 'net.trackme.conventions'
 
-// Included build не наследует gradle.properties корневой сборки,
-// поэтому версия по умолчанию читается оттуда вручную.
-// -Pversion из командной строки имеет приоритет (CI задаёт её при релизе).
 def rootProps = new Properties()
 new File(rootDir.parentFile, 'gradle.properties').withInputStream { rootProps.load(it) }
 version = providers.gradleProperty('version').getOrElse(rootProps.getProperty('version'))
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'net.ltgt.gradle:gradle-errorprone-plugin:5.1.0'
+}
 
 publishing {
     repositories {

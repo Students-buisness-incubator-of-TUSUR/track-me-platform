@@ -1,10 +1,11 @@
-// Convention-плагин качества кода Track Me: checkstyle + jacoco.
+// Convention-плагин качества кода Track Me: checkstyle + errorprone + jacoco.
 // Подключается в сервисах как id 'net.trackme.java-quality'.
 
 plugins {
     id 'java'
     id 'checkstyle'
     id 'jacoco'
+    id 'net.ltgt.errorprone'
 }
 
 // --- Checkstyle ---------------------------------------------------------
@@ -50,10 +51,27 @@ tasks.withType(Checkstyle).configureEach {
     }
 }
 
+// --- Error Prone --------------------------------------------------------
+def errorproneVersion = providers.gradleProperty('trackme.errorprone.version')
+        .getOrElse('2.50.0')
+
+def errorproneStrict = providers.gradleProperty('trackme.errorprone.strict')
+        .map { Boolean.parseBoolean(it) }.getOrElse(false)
+
+dependencies {
+    errorprone "com.google.errorprone:error_prone_core:${errorproneVersion}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.errorprone {
+        disableWarningsInGeneratedCode = true
+        excludedPaths = '.*/build/generated/.*'
+        allErrorsAsWarnings = !errorproneStrict
+    }
+}
+
 // --- JaCoCo -------------------------------------------------------------
 
-// Минимальное покрытие строк; переопределяется в gradle.properties потребителя:
-// trackme.coverage.minimum=0.45
 def coverageMinimum = providers.gradleProperty('trackme.coverage.minimum')
         .getOrElse('0.60') as BigDecimal
 
