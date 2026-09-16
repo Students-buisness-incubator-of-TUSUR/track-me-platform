@@ -9,15 +9,13 @@ javaPlatform {
 group = 'net.trackme.platform'
 
 dependencies {
-    api platform('org.springframework.boot:spring-boot-dependencies:3.5.0')
-    api platform('org.springframework.cloud:spring-cloud-dependencies:2024.0.1')
+    api platform('org.springframework.boot:spring-boot-dependencies:3.5.16')
+    api platform('org.springframework.cloud:spring-cloud-dependencies:2025.0.3')
     api platform('org.junit:junit-bom:5.11.0')
     api platform('org.testcontainers:testcontainers-bom:1.19.0')
 
     constraints {
-        api 'org.projectlombok:lombok:1.18.34'
-        api 'org.springframework:spring-context:6.1.6'
-        api 'org.springframework:spring-core:6.1.6'
+        api 'org.projectlombok:lombok:1.18.48'
         api 'jakarta.transaction:jakarta.transaction-api:2.0.1'
         api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.6'
         api 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6'

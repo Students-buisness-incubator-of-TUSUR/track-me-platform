@@ -8,6 +8,14 @@ plugins {
     id 'net.ltgt.errorprone'
 }
 
+def javaVersion = providers.gradleProperty('trackme.java.version').getOrElse('25') as int
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaVersion)
+    }
+}
+
 // --- Checkstyle ---------------------------------------------------------
 
 // Конфиги упакованы в jar плагина, а Checkstyle принимает только файлы,
@@ -71,6 +79,11 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 // --- JaCoCo -------------------------------------------------------------
+
+// JaCoCo >= 0.8.14 официально умеет class-файлы Java 25 (у Gradle 9 по умолчанию версия ниже).
+jacoco {
+    toolVersion = '0.8.15'
+}
 
 def coverageMinimum = providers.gradleProperty('trackme.coverage.minimum')
         .getOrElse('0.60') as BigDecimal
